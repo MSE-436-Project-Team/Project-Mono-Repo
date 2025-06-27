@@ -6,6 +6,8 @@ __pycache__/
 *.so
 .Python
 venv/
+backend_venv/
+middleware_venv/
 ENV/
 
 # Environment variables
@@ -28,3 +30,4 @@ data/processed/
 *.log
 ml-32m
 data
+CSVs
