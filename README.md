@@ -135,7 +135,7 @@ To run all services together:
 
    ```bash
    cd backend
-   python -m venv backend_venv
+   python -m venv venv
    source backend_venv/bin/activate  # On Windows: backend_venv\Scripts\activate
    pip install -r requirements.txt
    uvicorn app.main:app --reload --port 8001
