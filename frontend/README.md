@@ -1,54 +1,94 @@
-# React + TypeScript + Vite
+# NBA Fantasy Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A comprehensive React TypeScript dashboard for NBA fantasy league management with dynamic scoring weights and player projections.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Dynamic Fantasy Scoring**: Customize scoring weights for points, rebounds, assists, steals, blocks, and turnovers
+- **Player Projections**: Real-time fantasy point calculations based on player statistics and recent performance
+- **Interactive Dashboard**: Analytics, charts, and insights about player performance
+- **Search & Filter**: Find players by name, team, or position
+- **Responsive Design**: Works on desktop and mobile devices
 
-## Expanding the ESLint configuration
+## Setup Instructions
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+2. **Install Additional Dependencies** (if not already installed):
+   ```bash
+   npm install recharts lucide-react clsx tailwind-merge
+   npm install -D tailwindcss autoprefixer postcss
+   ```
+
+3. **Initialize Tailwind CSS**:
+   ```bash
+   npx tailwindcss init -p
+   ```
+
+4. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── DashboardStats.tsx      # Analytics and charts
+│   ├── PlayerProjectionsTable.tsx  # Player rankings table
+│   └── ScoringWeightsForm.tsx  # Custom scoring configuration
+├── services/
+│   └── mockData.ts            # Sample NBA data
+├── types/
+│   └── nba.ts                 # TypeScript interfaces
+├── utils/
+│   └── fantasyScoring.ts      # Fantasy point calculations
+└── App.tsx                    # Main dashboard component
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Fantasy Scoring System
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The dashboard supports customizable fantasy scoring with these default weights:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+- **Points**: 1.0 fantasy point per point scored
+- **Rebounds**: 1.2 fantasy points per rebound
+- **Assists**: 1.5 fantasy points per assist
+- **Steals**: 3.0 fantasy points per steal
+- **Blocks**: 3.0 fantasy points per block
+- **Turnovers**: -1.0 fantasy points per turnover
+
+Users can customize these weights through the interactive form.
+
+## Data Integration
+
+Currently uses mock data. To connect to your backend:
+
+1. Replace `mockPlayerStats` in `services/mockData.ts` with API calls
+2. Update the data loading logic in `App.tsx`
+3. Ensure your backend provides data in the expected format
+
+## Technologies Used
+
+- **React 19** with TypeScript
+- **Tailwind CSS** for styling
+- **Recharts** for data visualization
+- **Lucide React** for icons
+- **Vite** for build tooling
+
+## Development
+
+- Run `npm run dev` for development server
+- Run `npm run build` for production build
+- Run `npm run lint` for code linting
+
+## Future Enhancements
+
+- Real-time data integration with NBA API
+- Player comparison tools
+- Draft assistance features
+- League management tools
+- Export functionality for projections
