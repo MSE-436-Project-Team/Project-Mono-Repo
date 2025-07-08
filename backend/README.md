@@ -9,6 +9,7 @@ backend/
 ├── api_service.py           # Main FastAPI app and API endpoints
 ├── requirements.txt         # Python dependencies
 ├── CSVs/                   # All raw data (players, boxscores, career stats, etc.)
+├── Models/                 # Pre-trained (pre-trained models)
 ├── Output/                  # Model prediction CSVs (one per model)
 ├── TrainingAndTesting/     # Jupyter notebooks for model training/testing
 ├── DBManagement/           # (Optional) Supabase/DB client code
