@@ -1,289 +1,70 @@
-# Project Mono-Repo
+# NBA Fantasy Basketball Prediction Platform
 
-This is a monorepo containing frontend and backend components of the project.
+This is a monorepo for a full-stack NBA fantasy basketball analytics and prediction platform. It features a React/TypeScript frontend and a FastAPI/Python backend, supporting advanced machine learning models for player projections, custom fantasy scoring, and interactive analytics.
 
 ## Project Structure
 
 ```
-.
-├── frontend/     # React frontend (Vite) - Supports both JavaScript and TypeScript
-├── backend/      # Python backend service (FastAPI + API Gateway)
-│   ├── app/
-│   │   ├── api/          # API endpoints
-│   │   ├── core/         # Core functionality (database, config)
-│   │   ├── models/       # Database models
-│   │   ├── services/     # Business logic services
-│   │   └── main.py       # FastAPI application
-│   └── requirements.txt  # Python dependencies
-├── .env          # Environment variables (create this file)
-└── .gitignore    # Git ignore rules
+Project-Mono-Repo/
+├── backend/      # FastAPI backend, ML models, and data
+│   ├── api_service.py
+│   ├── CSVs/                # Player, boxscore, and model data (CSV)
+│   ├── Output/              # Model prediction CSVs
+│   ├── TrainingAndTesting/  # Jupyter notebooks for ML models
+│   ├── requirements.txt
+│   └── README.md            # Backend-specific setup & docs
+├── frontend/     # React + TypeScript + Tailwind CSS dashboard
+│   ├── src/
+│   ├── package.json
+│   └── README.md            # Frontend-specific setup & docs
+├── ploty-dash-frontend/     # (Optional) Plotly Dash analytics (Python)
+├── README.md                # (This file) Project overview & quick start
 ```
 
-## Git Setup and Workflow
-
-### Initial Setup
-
-1. **Clone the repository:**
-
-   ```bash
-   git clone <repository-url>
-   cd Project-Mono-Repo
-   ```
-
-2. **Create and configure your .env file:**
-
-   ```bash
-   cp .env.example .env  # if .env.example exists
-   # Edit .env with your configuration
-   ```
-
-3. **Initial commit (if starting fresh):**
-   ```bash
-   git add .
-   git commit -m "Initial project setup"
-   git push origin main
-   ```
-
-### Daily Development Workflow
-
-1. **Start your day:**
-
-   ```bash
-   git pull origin main
-   ```
-
-2. **Create a feature branch:**
-
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-3. **Make your changes and commit:**
-
-   ```bash
-   git add .
-   git commit -m "Add feature description"
-   ```
-
-4. **Push your branch:**
-
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-5. **Create a pull request** (on GitHub/GitLab) or merge locally:
-   ```bash
-   git checkout main
-   git merge feature/your-feature-name
-   git push origin main
-   ```
-
-### Useful Git Commands
-
-```bash
-# Check status
-git status
-
-# View commit history
-git log --oneline
-
-# View changes in a file
-git diff filename
-
-# Stash changes temporarily
-git stash
-git stash pop
-
-# Reset to last commit
-git reset --hard HEAD
-
-# View all branches
-git branch -a
-
-# Switch branches
-git checkout branch-name
-
-# Delete a branch
-git branch -d branch-name
-```
-
-## Environment Setup
-
-Create a `.env` file in the root directory with the following variables:
-
-```
-# Database Configuration
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/backend_db
-
-# Service Ports
-BACKEND_PORT=8001
-FRONTEND_PORT=5173
-
-# Service Hosts
-BACKEND_HOST=0.0.0.0
-
-# Service URLs
-BACKEND_URL=http://localhost:8001
-FRONTEND_URL=http://localhost:5173
-```
+## Requirements
+- Python 3.8+
+- Node.js 18+
+- npm
+- (Recommended) virtualenv or conda for Python
 
 ## Quick Start
 
-To run all services together:
-
-1. **Start the Backend:**
-
-   ```bash
-   cd backend
-   python -m venv venv
-   source backend_venv/bin/activate  # On Windows: backend_venv\Scripts\activate
-   pip install -r requirements.txt
-   uvicorn app.main:app --reload --port 8001
-   ```
-
-2. **Start the Frontend:**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-## Frontend (React)
-
-The frontend is built using Vite and React, with support for both JavaScript and TypeScript. You can use either language based on your preference:
-
-- Use `.jsx` files for JavaScript React components
-- Use `.tsx` files for TypeScript React components
-- Mix and match both in the same project
-
-To get started:
-
-1. Navigate to the frontend directory:
-
-   ```bash
-   cd frontend
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The frontend will be available at `http://localhost:5173`
-
-### Frontend Development
-
-You can create new components using either JavaScript or TypeScript:
-
-```jsx
-// Example.jsx - JavaScript component
-import React from "react";
-
-function Example() {
-  return (
-    <div>
-      <h1>Hello from JavaScript!</h1>
-    </div>
-  );
-}
-
-export default Example;
+### 1. Backend (FastAPI)
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn api_service:app --reload --port 8001
 ```
+The API will be available at http://localhost:8001
 
-```tsx
-// Example.tsx - TypeScript component
-import React from "react";
-
-const Example: React.FC = () => {
-  return (
-    <div>
-      <h1>Hello from TypeScript!</h1>
-    </div>
-  );
-};
-
-export default Example;
+### 2. Frontend (React)
+```bash
+cd frontend
+npm install
+npm run dev
 ```
+The dashboard will be available at http://localhost:5173
 
-Both approaches work seamlessly in the project. Choose the one that best fits your needs!
+## Folder Details
+- **backend/**: All Python code, data, and ML models. See `backend/README.md` for details.
+- **frontend/**: All React/TypeScript code for the dashboard. See `frontend/README.md` for details.
+- **ploty-dash-frontend/**: (Optional) Python Plotly Dash analytics app.
 
-## Backend (Python + FastAPI)
+## Data & Models
+- Place all CSV data in `backend/CSVs/`.
+- Place all model prediction CSVs in `backend/Output/`.
+- See backend/README.md for details on supported files and formats.
 
-The backend service combines both API gateway and business logic functionality. It's organized into modules for better code structure:
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes and test
+4. Submit a pull request
 
-- **API Gateway**: Handles CORS, routing, and request/response processing
-- **Business Logic**: Core application functionality and data processing
-- **Database**: SQLAlchemy ORM with PostgreSQL support
+## License
+MIT
 
-To get started:
-
-1. Navigate to the backend directory:
-
-   ```bash
-   cd backend
-   ```
-
-2. Create and activate a virtual environment:
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. Start the development server:
-   ```bash
-   uvicorn app.main:app --reload --port 8001
-   ```
-
-The backend will be available at `http://localhost:8001`
-
-### Backend Structure
-
-```
-backend/app/
-├── api/          # API endpoints and routes
-├── core/         # Core functionality (database, config)
-├── models/       # Database models
-├── services/     # Business logic services
-└── main.py       # FastAPI application entry point
-```
-
-## API Documentation
-
-Once the backend server is running, you can access:
-
-- Interactive API documentation (Swagger UI): `http://localhost:8001/docs`
-- Alternative API documentation (ReDoc): `http://localhost:8001/redoc`
-
-## Available Endpoints
-
-### Backend Endpoints
-
-- `GET /`: Welcome message
-- `GET /health`: Health check endpoint
-- `GET /api/users`: Get all users
-- `GET /api/users/{user_id}`: Get specific user
-- `POST /api/users`: Create new user
-- `GET /api/data`: Get business data
-
-## Development Notes
-
-- All services read environment variables from the root `.env` file
-- The backend combines API gateway and business logic in a single service
-- CORS is configured to allow frontend communication
-- Virtual environments are used for Python dependencies isolation
-- The frontend supports both JavaScript and TypeScript components
-- Database support with SQLAlchemy and PostgreSQL
-- Organized backend structure with separate modules for different concerns
+---
+See `backend/README.md` and `frontend/README.md` for detailed setup, usage, and development instructions for each part of the project.

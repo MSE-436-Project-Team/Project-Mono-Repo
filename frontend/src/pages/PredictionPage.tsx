@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MODEL_TYPES, getModelDisplayName, loadPlayerData, loadModelPredictions, combinePlayerDataWithPredictions, loadPlayerHistory } from '../services/nbaDataService';
+import { MODEL_TYPES, getModelDisplayName, loadPlayerData, loadModelPredictions, combinePlayerDataWithPredictions, loadPlayerHistory, calculatePlayerFantasyPoints, sortPlayersByFantasyPoints } from '../services/nbaDataService';
 import type { PlayerStats, ModelType } from '../types/nba';
 import { Line } from 'react-chartjs-2';
 import {
@@ -19,6 +19,25 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 
 const PAGE_SIZES = [10, 20, 50];
 
+// Default fantasy scoring weights
+const DEFAULT_WEIGHTS = {
+  points: 1,
+  rebounds: 1.2,
+  assists: 1.5,
+  steals: 2,
+  blocks: 2,
+  turnovers: -1,
+  fieldGoalsMade: 0,
+  fieldGoalsAttempted: 0,
+  threePointsMade: 0,
+  threePointsAttempted: 0,
+  freeThrowsMade: 0,
+  freeThrowsAttempted: 0,
+  offensiveRebounds: 0,
+  defensiveRebounds: 0,
+  personalFouls: 0
+};
+
 const PredictionPage: React.FC = () => {
   const { modelType } = useParams<{ modelType: ModelType }>();
   const navigate = useNavigate();
@@ -31,6 +50,7 @@ const PredictionPage: React.FC = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerStats | null>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [scoringWeights, setScoringWeights] = useState(DEFAULT_WEIGHTS);
 
   useEffect(() => {
     if (modelType && modelType !== selectedModel) {
@@ -39,18 +59,34 @@ const PredictionPage: React.FC = () => {
     // eslint-disable-next-line
   }, [modelType]);
 
+  // Load custom scoring weights from localStorage
+  useEffect(() => {
+    const savedWeights = localStorage.getItem('fantasyScoringWeights');
+    if (savedWeights) {
+      try {
+        const weights = JSON.parse(savedWeights);
+        setScoringWeights({ ...DEFAULT_WEIGHTS, ...weights });
+      } catch (error) {
+        console.error('Error loading scoring weights:', error);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       const playerData = await loadPlayerData();
       const predictions = await loadModelPredictions(selectedModel);
       const combined = combinePlayerDataWithPredictions(playerData, predictions, selectedModel);
-      setPlayers(combined);
+      
+      // Apply custom scoring and sort by fantasy points
+      const sortedPlayers = sortPlayersByFantasyPoints(combined, scoringWeights);
+      setPlayers(sortedPlayers);
       setIsLoading(false);
       setPage(1);
     };
     fetchData();
-  }, [selectedModel]);
+  }, [selectedModel, scoringWeights]);
 
   const handlePlayerClick = async (player: PlayerStats) => {
     setSelectedPlayer(player);
@@ -64,13 +100,13 @@ const PredictionPage: React.FC = () => {
   const pagedPlayers = players.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(players.length / pageSize);
 
-  // Prepare chart data
+  // Prepare chart data (oldest to newest from left to right)
   const chartData = history.length > 0 ? {
-    labels: history.map((row) => row.SEASON || row.SEASON_ID),
+    labels: history.map((row) => row.SEASON || row.SEASON_ID).reverse(),
     datasets: [
       {
         label: 'Points',
-        data: history.map((row) => row.PTS || row.Points || 0),
+        data: history.map((row) => row.PTS || row.Points || 0).reverse(),
         borderColor: '#2563eb',
         backgroundColor: 'rgba(37,99,235,0.2)',
       },
@@ -112,6 +148,7 @@ const PredictionPage: React.FC = () => {
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Player</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Team</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Position</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Fantasy Points</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Points</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Rebounds</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Assists</th>
@@ -121,26 +158,30 @@ const PredictionPage: React.FC = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={8} className="text-center py-8 text-gray-500">Loading...</td></tr>
+                <tr><td colSpan={9} className="text-center py-8 text-gray-500">Loading...</td></tr>
               ) : pagedPlayers.length === 0 ? (
-                <tr><td colSpan={8} className="text-center py-8 text-gray-500">No players found.</td></tr>
+                <tr><td colSpan={9} className="text-center py-8 text-gray-500">No players found.</td></tr>
               ) : (
-                pagedPlayers.map(player => (
-                  <tr
-                    key={player.PERSON_ID}
-                    className="hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer"
-                    onClick={() => handlePlayerClick(player)}
-                  >
-                    <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{player.DISPLAY_FIRST_LAST}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.Points ?? player.next_Points ?? '-'}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.REB ?? player.next_REB ?? '-'}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.AST ?? player.next_AST ?? '-'}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.STL ?? player.next_STL ?? '-'}</td>
-                    <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.BLK ?? player.next_BLK ?? '-'}</td>
-                  </tr>
-                ))
+                pagedPlayers.map(player => {
+                  const fantasyPoints = calculatePlayerFantasyPoints(player, scoringWeights);
+                  return (
+                    <tr
+                      key={player.PERSON_ID}
+                      className="hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer"
+                      onClick={() => handlePlayerClick(player)}
+                    >
+                      <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{player.DISPLAY_FIRST_LAST}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
+                      <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-400">{fantasyPoints.toFixed(1)}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.Points ?? player.next_Points ?? '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.REB ?? player.next_REB ?? '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.AST ?? player.next_AST ?? '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.STL ?? player.next_STL ?? '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.BLK ?? player.next_BLK ?? '-'}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -164,8 +205,14 @@ const PredictionPage: React.FC = () => {
         </div>
         {/* Player Detail Modal (expanded) */}
         {showModal && selectedPlayer && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-2xl w-full relative">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
+            onClick={() => setShowModal(false)}
+          >
+            <div
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative"
+              onClick={e => e.stopPropagation()}
+            >
               <button
                 className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
                 onClick={() => setShowModal(false)}
@@ -175,6 +222,11 @@ const PredictionPage: React.FC = () => {
               <h2 className="text-xl font-bold mb-2 text-blue-900 dark:text-blue-200">{selectedPlayer.DISPLAY_FIRST_LAST}</h2>
               <p className="text-gray-700 dark:text-gray-200 mb-2">Team: {selectedPlayer.TEAM_ABBREVIATION}</p>
               <p className="text-gray-700 dark:text-gray-200 mb-2">Position: {selectedPlayer.POSITION}</p>
+              <p className="text-gray-700 dark:text-gray-200 mb-4">
+                Fantasy Points: <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {calculatePlayerFantasyPoints(selectedPlayer, scoringWeights).toFixed(1)}
+                </span>
+              </p>
               {historyLoading ? (
                 <div className="text-center py-8 text-gray-500">Loading history...</div>
               ) : history.length > 0 ? (
@@ -199,17 +251,17 @@ const PredictionPage: React.FC = () => {
                             <th className="px-2 py-1">BLK</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {history.map((row, idx) => (
-                            <tr key={idx}>
+                        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                          {history.map((row, index) => (
+                            <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                               <td className="px-2 py-1">{row.SEASON || row.SEASON_ID}</td>
                               <td className="px-2 py-1">{row.TEAM_ABBREVIATION}</td>
-                              <td className="px-2 py-1">{row.GP}</td>
-                              <td className="px-2 py-1">{row.PTS ?? row.Points ?? '-'}</td>
-                              <td className="px-2 py-1">{row.REB ?? '-'}</td>
-                              <td className="px-2 py-1">{row.AST ?? '-'}</td>
-                              <td className="px-2 py-1">{row.STL ?? '-'}</td>
-                              <td className="px-2 py-1">{row.BLK ?? '-'}</td>
+                              <td className="px-2 py-1">{row.GP || row.GAMES_PLAYED}</td>
+                              <td className="px-2 py-1">{row.PTS || row.Points}</td>
+                              <td className="px-2 py-1">{row.REB || row.REBOUNDS}</td>
+                              <td className="px-2 py-1">{row.AST || row.ASSISTS}</td>
+                              <td className="px-2 py-1">{row.STL || row.STEALS}</td>
+                              <td className="px-2 py-1">{row.BLK || row.BLOCKS}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -218,16 +270,8 @@ const PredictionPage: React.FC = () => {
                   </div>
                 </>
               ) : (
-                <div className="text-center py-8 text-gray-500">No history found.</div>
+                <div className="text-center py-8 text-gray-500">No career history available.</div>
               )}
-              <div className="mt-4 text-right">
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  onClick={() => setShowModal(false)}
-                >
-                  Close
-                </button>
-              </div>
             </div>
           </div>
         )}

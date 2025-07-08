@@ -37,7 +37,7 @@ const HomeDashboardPage: React.FC = () => {
         <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-200 mb-4 text-center">NBA Fantasy Dashboard</h1>
         <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 text-center">Explore league-wide insights, top players, and compare model predictions for the 2025-26 season.</p>
         {loading ? (
-          <div className="text-center text-gray-500">Loading metrics...</div>
+          <div className="text-center text-gray-500 dark:text-gray-400">Loading metrics...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -47,7 +47,7 @@ const HomeDashboardPage: React.FC = () => {
                   <li key={player.PERSON_ID} className="flex items-center gap-3">
                     <span className="font-bold text-blue-600 dark:text-blue-300">#{idx + 1}</span>
                     <span className="font-medium text-gray-900 dark:text-gray-100">{player.DISPLAY_FIRST_LAST}</span>
-                    <span className="text-xs text-gray-500">{player.TEAM_ABBREVIATION}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{player.TEAM_ABBREVIATION}</span>
                     <span className="ml-auto text-blue-700 dark:text-blue-200 font-semibold">{player.Points?.toFixed(1) ?? player.Points ?? '-'}</span>
                   </li>
                 ))}
@@ -75,11 +75,11 @@ const HomeDashboardPage: React.FC = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(leagueStats).map(([stat, val]: any) => (
                   <div key={stat} className="bg-blue-50 dark:bg-blue-900 rounded p-3 text-center">
-                    <div className="text-xs text-gray-500 uppercase">{stat}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 uppercase">{stat}</div>
                     <div className="text-lg font-bold text-blue-800 dark:text-blue-100">{val.average?.toFixed(1) ?? '-'}</div>
-                    <div className="text-xs text-gray-400">avg</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">avg</div>
                     <div className="text-sm text-blue-700 dark:text-blue-200">{val.total?.toFixed(0) ?? '-'}</div>
-                    <div className="text-xs text-gray-400">total</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">total</div>
                   </div>
                 ))}
               </div>
@@ -98,7 +98,7 @@ const HomeDashboardPage: React.FC = () => {
                 ))}
                 <Link
                   to="/scoring"
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition"
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                 >
                   Custom Scoring
                 </Link>

@@ -164,3 +164,80 @@ Project-Mono-Repo/
 ## License
 
 This project is licensed under the MIT License.
+
+# Frontend (React, TypeScript, Tailwind CSS)
+
+This directory contains the frontend for the NBA Fantasy Basketball Prediction Platform. It is a modern, responsive dashboard built with React, TypeScript, and Tailwind CSS.
+
+## Directory Structure
+
+```
+frontend/
+├── src/
+│   ├── components/    # Reusable React components
+│   ├── pages/         # Main pages/routes
+│   ├── services/      # API service calls
+│   ├── types/         # TypeScript interfaces/types
+│   ├── utils/         # Utility functions
+│   └── ...
+├── public/            # Static assets
+├── package.json       # NPM dependencies
+├── tailwind.config.js # Tailwind CSS config
+├── vite.config.ts     # Vite build config
+└── README.md          # (This file)
+```
+
+## Requirements
+- Node.js 18+
+- npm
+
+## Setup
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   The dashboard will be available at http://localhost:5173
+
+## Connecting to the Backend
+- The frontend expects the FastAPI backend to be running (see `../backend/README.md`).
+- By default, API requests go to `http://localhost:8001`.
+- You can change the API base URL in the service files if needed.
+
+## Features
+- Switch between multiple ML models for player projections
+- Customizable fantasy scoring weights
+- Filter/search by player, team, position
+- Player detail modals with career stats and charts
+- Responsive, dark mode UI
+
+## Development
+- All main UI code is in `src/`.
+- Add new pages to `src/pages/` and new components to `src/components/`.
+- Use TypeScript for type safety (see `src/types/`).
+- Tailwind CSS is used for styling; see `tailwind.config.js` for customization.
+
+### Adding a New Model
+1. Add the model type to the `MODEL_TYPES` array in `src/services/nbaDataService.ts`.
+2. Add a display name/description if needed.
+3. Ensure the backend serves the corresponding predictions.
+
+### Custom Scoring
+- User scoring weights are stored in `localStorage` and applied to all fantasy point calculations.
+- Edit weights via the Custom Scoring page in the UI.
+
+## Scripts
+- `npm run dev` — Start development server
+- `npm run build` — Build for production
+- `npm run preview` — Preview production build
+
+## Tips
+- Use the dark mode toggle in the navbar for light/dark themes.
+- The dashboard is mobile-friendly and responsive.
+
+## License
+MIT

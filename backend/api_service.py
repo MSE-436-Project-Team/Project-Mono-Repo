@@ -107,8 +107,8 @@ async def get_player_history(player_id: int):
         
         df = pd.read_csv(career_stats_path)
         
-        # Filter for the specific player
-        player_history = df[df['PERSON_ID'] == player_id].copy()
+        # Filter for the specific player (using PLAYER_ID column)
+        player_history = df[df['PLAYER_ID'] == player_id].copy()
         
         if player_history.empty:
             raise HTTPException(status_code=404, detail="Player not found")
