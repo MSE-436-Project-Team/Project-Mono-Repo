@@ -14,6 +14,9 @@ export const DEFAULT_SCORING_WEIGHTS: ScoringWeights = {
   threePointsAttempted: 0,
   freeThrowsMade: 0,
   freeThrowsAttempted: 0,
+  offensiveRebounds: 1.2,
+  defensiveRebounds: 1.2,
+  personalFouls: -0.5,
 };
 
 /**
@@ -36,6 +39,9 @@ export function calculateFantasyPoints(
     '3PA': threePA,
     FTM,
     FTA,
+    OREB,
+    DREB,
+    PF,
   } = stats;
 
   let fantasyPoints = 0;
@@ -55,6 +61,11 @@ export function calculateFantasyPoints(
   fantasyPoints += threePA * weights.threePointsAttempted;
   fantasyPoints += FTM * weights.freeThrowsMade;
   fantasyPoints += FTA * weights.freeThrowsAttempted;
+
+  // Additional fantasy stats
+  fantasyPoints += OREB * weights.offensiveRebounds;
+  fantasyPoints += DREB * weights.defensiveRebounds;
+  fantasyPoints += PF * weights.personalFouls;
 
   return Math.round(fantasyPoints * 100) / 100; // Round to 2 decimal places
 }

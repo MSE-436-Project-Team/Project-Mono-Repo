@@ -1,94 +1,166 @@
-# NBA Fantasy Dashboard
+# NBA Fantasy Basketball Dashboard
 
-A comprehensive React TypeScript dashboard for NBA fantasy league management with dynamic scoring weights and player projections.
+A comprehensive dashboard for NBA fantasy basketball that displays player projections for the 2025-26 season using advanced machine learning models.
 
 ## Features
 
-- **Dynamic Fantasy Scoring**: Customize scoring weights for points, rebounds, assists, steals, blocks, and turnovers
-- **Player Projections**: Real-time fantasy point calculations based on player statistics and recent performance
-- **Interactive Dashboard**: Analytics, charts, and insights about player performance
-- **Search & Filter**: Find players by name, team, or position
-- **Responsive Design**: Works on desktop and mobile devices
+- **Multiple ML Models**: Switch between 8 different machine learning models including Bayesian Regression, Ridge Regression, LightGBM, XGBoost, LSTM, Transformer, and Ensemble methods
+- **Real Player Data**: Loads actual NBA player data from CSV files via FastAPI backend
+- **Fantasy Points Calculation**: Customizable scoring weights for fantasy basketball leagues
+- **Advanced Filtering**: Filter players by position, team, and search by name
+- **Responsive Design**: Modern UI built with React, TypeScript, and Tailwind CSS
+- **FastAPI Backend**: High-performance Python backend serving data from CSV files
+
+## Available Models
+
+1. **Bayesian Regression** - Probabilistic model with uncertainty quantification
+2. **Ridge Regression** - Linear regression with L2 regularization
+3. **LightGBM** - Gradient boosting framework optimized for speed
+4. **XGBoost** - Extreme gradient boosting with advanced regularization
+5. **LSTM Neural Network** - Long Short-Term Memory for sequential patterns
+6. **Transformer** - Attention-based neural network architecture
+7. **Simple Ensemble** - Average of all individual model predictions
+8. **Weighted Ensemble** - Weighted average based on model performance
+
+## Fantasy Basketball Statistics
+
+The dashboard supports all major fantasy basketball statistics:
+- **Points** - Points scored
+- **Rebounds** - Total rebounds (Offensive + Defensive)
+- **Assists** - Assists
+- **Steals** - Steals
+- **Blocks** - Blocks
+- **Turnovers** - Turnovers (negative points)
+- **Field Goals Made/Attempted** - Shooting efficiency
+- **3-Pointers Made/Attempted** - Long-range shooting
+- **Free Throws Made/Attempted** - Free throw efficiency
+- **Offensive Rebounds** - Offensive boards
+- **Defensive Rebounds** - Defensive boards
+- **Personal Fouls** - Fouls (negative points)
+
+## Tech Stack
+
+### Frontend
+- **React 18** - Modern React with hooks
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Vite** - Fast build tool and dev server
+
+### Backend
+- **FastAPI** - High-performance Python web framework
+- **Pandas** - Data manipulation and CSV reading
+- **Uvicorn** - ASGI server for FastAPI
+
+### Data Sources
+- **Active Players** - Current NBA player roster
+- **Model Predictions** - 2025-26 season projections from 8 ML models
+- **Career Statistics** - Historical player performance data
 
 ## Setup Instructions
 
-1. **Install Dependencies**:
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.8+ with pip
+- Git
+
+### Backend Setup (FastAPI)
+
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
+   ```
+
+2. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Start the FastAPI server:**
+   ```bash
+   uvicorn api_service:app --reload --port 8000
+   ```
+
+   The API will be available at `http://localhost:8000`
+
+### Frontend Setup
+
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install Node.js dependencies:**
    ```bash
    npm install
    ```
 
-2. **Install Additional Dependencies** (if not already installed):
-   ```bash
-   npm install recharts lucide-react clsx tailwind-merge
-   npm install -D tailwindcss autoprefixer postcss
-   ```
-
-3. **Initialize Tailwind CSS**:
-   ```bash
-   npx tailwindcss init -p
-   ```
-
-4. **Start Development Server**:
+3. **Start the development server:**
    ```bash
    npm run dev
    ```
 
-## Project Structure
+   The dashboard will be available at `http://localhost:5173`
 
-```
-src/
-├── components/
-│   ├── DashboardStats.tsx      # Analytics and charts
-│   ├── PlayerProjectionsTable.tsx  # Player rankings table
-│   └── ScoringWeightsForm.tsx  # Custom scoring configuration
-├── services/
-│   └── mockData.ts            # Sample NBA data
-├── types/
-│   └── nba.ts                 # TypeScript interfaces
-├── utils/
-│   └── fantasyScoring.ts      # Fantasy point calculations
-└── App.tsx                    # Main dashboard component
-```
+## API Endpoints
 
-## Fantasy Scoring System
+### FastAPI Backend (`http://localhost:8000`)
 
-The dashboard supports customizable fantasy scoring with these default weights:
+- `GET /players` - Get all active NBA players
+- `GET /predictions/{model_type}` - Get predictions for a specific model
+- `GET /player/{person_id}/history` - Get career statistics for a player
+- `GET /` - Health check endpoint
 
-- **Points**: 1.0 fantasy point per point scored
-- **Rebounds**: 1.2 fantasy points per rebound
-- **Assists**: 1.5 fantasy points per assist
-- **Steals**: 3.0 fantasy points per steal
-- **Blocks**: 3.0 fantasy points per block
-- **Turnovers**: -1.0 fantasy points per turnover
+### Available Model Types
+- `bayesian` - Bayesian Regression predictions
+- `ridge` - Ridge Regression predictions
+- `lightgbm` - LightGBM predictions
+- `xgboost` - XGBoost predictions
+- `lstm` - LSTM Neural Network predictions
+- `transformer` - Transformer predictions
+- `ensemble_simple` - Simple Ensemble predictions
+- `ensemble_weighted` - Weighted Ensemble predictions
 
-Users can customize these weights through the interactive form.
+## Usage
 
-## Data Integration
-
-Currently uses mock data. To connect to your backend:
-
-1. Replace `mockPlayerStats` in `services/mockData.ts` with API calls
-2. Update the data loading logic in `App.tsx`
-3. Ensure your backend provides data in the expected format
-
-## Technologies Used
-
-- **React 19** with TypeScript
-- **Tailwind CSS** for styling
-- **Recharts** for data visualization
-- **Lucide React** for icons
-- **Vite** for build tooling
+1. **Select a Model**: Choose from 8 different ML models to view their predictions
+2. **Customize Scoring**: Adjust fantasy points weights for different statistics
+3. **Filter Players**: Use position, team, and search filters to find specific players
+4. **View Projections**: See predicted statistics for the 2025-26 season
+5. **Calculate Fantasy Points**: View calculated fantasy points based on your scoring system
 
 ## Development
 
-- Run `npm run dev` for development server
-- Run `npm run build` for production build
-- Run `npm run lint` for code linting
+### Project Structure
+```
+Project-Mono-Repo/
+├── backend/
+│   ├── api_service.py          # FastAPI service
+│   ├── CSVs/                   # Player and historical data
+│   ├── Output/                 # Model predictions
+│   └── TrainingAndTesting/     # ML model notebooks
+└── frontend/
+    ├── src/
+    │   ├── components/         # React components
+    │   ├── services/           # API service calls
+    │   ├── types/              # TypeScript interfaces
+    │   └── utils/              # Utility functions
+    └── package.json
+```
 
-## Future Enhancements
+### Adding New Models
+1. Add prediction CSV to `backend/Output/`
+2. Update `MODEL_FILES` in `backend/api_service.py`
+3. Add model type to `MODEL_TYPES` in frontend service
+4. Update model display names and descriptions
 
-- Real-time data integration with NBA API
-- Player comparison tools
-- Draft assistance features
-- League management tools
-- Export functionality for projections
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.

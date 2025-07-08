@@ -1,168 +1,142 @@
-import React, { useState } from 'react';
-import type { FantasyProjection } from '../types/nba';
+import React from 'react';
+import type { PlayerStats, ScoringWeights } from '../types/nba';
+import { calculatePlayerFantasyPoints } from '../services/nbaDataService';
 
 interface PlayerProjectionsTableProps {
-  projections: FantasyProjection[];
-  onPlayerClick?: (projection: FantasyProjection) => void;
+  players: PlayerStats[];
+  scoringWeights: ScoringWeights;
+  isLoading?: boolean;
 }
 
-const PlayerProjectionsTable: React.FC<PlayerProjectionsTableProps> = ({ 
-  projections, 
-  onPlayerClick 
+const PlayerProjectionsTable: React.FC<PlayerProjectionsTableProps> = ({
+  players,
+  scoringWeights,
+  isLoading = false
 }) => {
-  const [sortBy, setSortBy] = useState<keyof FantasyProjection>('projectedFantasyPoints');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const [positionFilter, setPositionFilter] = useState<string>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-center h-32">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          <span className="ml-3 text-gray-600">Loading player projections...</span>
+        </div>
+      </div>
+    );
+  }
 
-  const handleSort = (key: keyof FantasyProjection) => {
-    if (sortBy === key) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(key);
-      setSortOrder('desc');
-    }
-  };
-
-  const filteredAndSortedProjections = projections
-    .filter(projection => {
-      const matchesPosition = positionFilter === 'ALL' || projection.player.POSITION_CATEGORY === positionFilter;
-      const matchesSearch = projection.player.DISPLAY_FIRST_LAST.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           projection.player.TEAM_ABBREVIATION.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesPosition && matchesSearch;
-    })
-    .sort((a, b) => {
-      const aValue = a[sortBy];
-      const bValue = b[sortBy];
-      
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortOrder === 'asc' ? aValue - bValue : bValue - aValue;
-      }
-      
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortOrder === 'asc' ? String(aValue).localeCompare(String(bValue)) : String(bValue).localeCompare(String(aValue));
-      }
-      
-      return 0;
-    });
-
-  const positions = ['ALL', ...Array.from(new Set(projections.map(p => p.player.POSITION_CATEGORY)))];
+  if (players.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="text-center text-gray-500 py-8">
+          No players found matching the current filters.
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="card">
-      <div className="flex flex-col sm:flex-row gap-4 mb-4">
-        <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Search Players</label>
-          <input
-            type="text"
-            placeholder="Search by name or team..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input-field"
-          />
-        </div>
-        <div className="sm:w-48">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
-          <select
-            value={positionFilter}
-            onChange={(e) => setPositionFilter(e.target.value)}
-            className="input-field"
-          >
-            {positions.map(position => (
-              <option key={position} value={position}>
-                {position === 'ALL' ? 'All Positions' : position}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <h2 className="text-xl font-bold">Player Projections (2025-26)</h2>
+        <p className="text-sm text-gray-600 mt-1">
+          Showing {players.length} players with predicted statistics
+        </p>
       </div>
-
+      
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('rank')}>
-                Rank
-              </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('player')}>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Player
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('player')}>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Team
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('player')}>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Pos
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('projectedFantasyPoints')}>
-                Proj. FP
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Fantasy Pts
               </th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">Proj. PTS</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">Proj. REB</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">Proj. AST</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">Proj. STL</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">Proj. BLK</th>
-              <th className="px-3 py-2 text-left font-medium text-gray-700">Proj. TO</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                PTS
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                REB
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                AST
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                STL
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                BLK
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                TO
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                MIN
+              </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredAndSortedProjections.map((projection) => (
-              <tr 
-                key={projection.player.PERSON_ID}
-                className="hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => onPlayerClick?.(projection)}
-              >
-                <td className="px-3 py-2 font-medium text-gray-900">
-                  #{projection.rank}
-                </td>
-                <td className="px-3 py-2 font-medium text-gray-900">
-                  {projection.player.DISPLAY_FIRST_LAST}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.player.TEAM_ABBREVIATION}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.player.POSITION_CATEGORY}
-                </td>
-                <td className="px-3 py-2 font-semibold text-primary-600">
-                  {projection.projectedFantasyPoints.toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.projectedStats.points.toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.projectedStats.rebounds.toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.projectedStats.assists.toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.projectedStats.steals.toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.projectedStats.blocks.toFixed(1)}
-                </td>
-                <td className="px-3 py-2 text-gray-600">
-                  {projection.projectedStats.turnovers.toFixed(1)}
-                </td>
-              </tr>
-            ))}
+          <tbody className="bg-white divide-y divide-gray-200">
+            {players.map((player, index) => {
+              const fantasyPoints = calculatePlayerFantasyPoints(player, scoringWeights);
+              
+              return (
+                <tr key={player.PERSON_ID} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {player.DISPLAY_FIRST_LAST}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {player.HEIGHT} • {player.WEIGHT} lbs
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.TEAM_ABBREVIATION}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.POSITION}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-blue-600">
+                      {fantasyPoints.toFixed(1)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_Points !== undefined ? player.next_Points.toFixed(1) : '0.0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_REB !== undefined ? player.next_REB.toFixed(1) : '0.0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_AST !== undefined ? player.next_AST.toFixed(1) : '0.0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_STL !== undefined ? player.next_STL.toFixed(1) : '0.0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_BLK !== undefined ? player.next_BLK.toFixed(1) : '0.0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_TO !== undefined ? player.next_TO.toFixed(1) : '0.0'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '0.0'}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </div>
-
-      {filteredAndSortedProjections.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          No players found matching your criteria.
-        </div>
-      )}
-
-      <div className="mt-4 text-sm text-gray-600">
-        Showing {filteredAndSortedProjections.length} of {projections.length} players
       </div>
     </div>
   );
