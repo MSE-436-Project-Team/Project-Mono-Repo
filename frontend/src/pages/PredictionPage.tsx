@@ -38,6 +38,23 @@ const DEFAULT_WEIGHTS = {
   personalFouls: 0
 };
 
+const COLUMN_DESCRIPTIONS: Record<string, string> = {
+  PLAYER: 'The player’s full name.',
+  TEAM: 'The NBA team abbreviation.',
+  POS: 'The player’s position (e.g., G, F, C).',
+  TOTAL: 'Projected fantasy points based on your scoring settings.',
+  MPG: 'Minutes per game',
+  'FG%': 'Field goal percentage',
+  'FT%': 'Free throw percentage',
+  '3PM': '3 points made (per game)',
+  PTS: 'Points per game',
+  REB: 'Rebounds per game',
+  AST: 'Assists per game',
+  STL: 'Steals per game',
+  BLK: 'Blocks per game',
+  TO: 'Turnovers per game'
+};
+
 const PredictionPage: React.FC = () => {
   const { modelType } = useParams<{ modelType: ModelType }>();
   const navigate = useNavigate();
@@ -51,6 +68,8 @@ const PredictionPage: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [scoringWeights, setScoringWeights] = useState(DEFAULT_WEIGHTS);
+  const [openTooltip, setOpenTooltip] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
 
   useEffect(() => {
     if (modelType && modelType !== selectedModel) {
@@ -97,8 +116,74 @@ const PredictionPage: React.FC = () => {
     setHistoryLoading(false);
   };
 
-  const pagedPlayers = players.slice((page - 1) * pageSize, page * pageSize);
+  const sortedPlayers = React.useMemo(() => {
+    if (!sortColumn) return players;
+    // Use a copy to avoid mutating state
+    const sorted = [...players];
+    sorted.sort((a, b) => {
+      const aVal = (a as any)[sortColumn];
+      const bVal = (b as any)[sortColumn];
+      // Handle undefined/null
+      if (aVal == null && bVal == null) return 0;
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      // Numeric sort (descending)
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return bVal - aVal;
+      }
+      // String sort (descending)
+      return String(bVal).localeCompare(String(aVal));
+    });
+    return sorted;
+  }, [players, sortColumn]);
+
+  const pagedPlayers = sortedPlayers.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(players.length / pageSize);
+
+  function getStatColor(value: number | null | undefined, thresholds: [number, string][]) {
+    if (value === null || value === undefined) return 'bg-transparent';
+    for (const [threshold, color] of thresholds) {
+      if (value >= threshold) return color;
+    }
+    return 'bg-red-500 text-white';
+  }
+
+  // Example usage for REB:
+  const rebThresholds: [number, string][] = [
+    [12, 'bg-green-600 text-white'],
+    [9, 'bg-green-400 text-white'],
+    [6, 'bg-yellow-200'],
+    [3, 'bg-orange-300'],
+  ];
+
+  const ptsThresholds: [number, string][] = [
+    [30, 'bg-green-600 text-white'],
+    [22, 'bg-green-400 text-white'],
+    [15, 'bg-yellow-200'],
+    [8, 'bg-orange-300'],
+  ];
+
+  const astThresholds: [number, string][] = [
+    [10, 'bg-green-600 text-white'],
+    [7, 'bg-green-400 text-white'],
+    [4, 'bg-yellow-200'],
+    [2, 'bg-orange-300'],
+  ];
+
+  const stlThresholds: [number, string][] = [
+    [2.5, 'bg-green-600 text-white'],
+    [1.5, 'bg-green-400 text-white'],
+    [1, 'bg-yellow-200'],
+    [0.5, 'bg-orange-300'],
+  ];
+
+  const blkThresholds: [number, string][] = [
+    [2.5, 'bg-green-600 text-white'],
+    [1.5, 'bg-green-400 text-white'],
+    [1, 'bg-yellow-200'],
+    [0.5, 'bg-orange-300'],
+  ];
+
 
   // Prepare chart data (oldest to newest from left to right)
   const chartData = history.length > 0 ? {
@@ -112,6 +197,17 @@ const PredictionPage: React.FC = () => {
       },
     ],
   } : null;
+
+  function handleTooltipClick(column: string) {
+    setOpenTooltip(openTooltip === column ? null : column);
+  }
+
+  function handleTooltipBlur(e: React.FocusEvent<HTMLButtonElement>, column: string) {
+    // If focus moves outside the button and tooltip, close the tooltip
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setOpenTooltip(null);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -145,21 +241,38 @@ const PredictionPage: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-100 dark:bg-gray-700 sticky top-0">
               <tr>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Player</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Team</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Position</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Fantasy Points</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Minutes</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Points</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Rebounds</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Assists</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Steals</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Blocks</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">3 Pointers Made</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">3 Point Percentage</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Free Throw Percentage</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Field Goal Percentage</th>
-                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Turnovers</th>
+                {[
+                  'PLAYER', 'TEAM', 'POS', 'TOTAL', 'MPG', 'FG%',
+                  'FT%', '3PM', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'TO'
+                ].map((col) => (
+                  <th key={col} className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 relative">
+                    <span className="inline-flex items-center gap-1">
+                      <button
+                        type="button"
+                        className="hover:underline focus:outline-none"
+                        onClick={() => setSortColumn(col)}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
+                      >
+                        {col}
+                        {sortColumn === col && <span className="ml-1">▼</span>}
+                      </button>
+                      <button
+                        type="button"
+                        tabIndex={0}
+                        className="text-blue-500 hover:text-blue-700 focus:outline-none"
+                        onClick={e => { e.stopPropagation(); handleTooltipClick(col); }}
+                        onBlur={e => handleTooltipBlur(e, col)}
+                      >
+                        <span aria-label={`Info about ${col}`}>?</span>
+                      </button>
+                    </span>
+                    {openTooltip === col && (
+                      <div className="absolute left-0 mt-2 w-56 z-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg p-2 text-xs text-gray-800 dark:text-gray-100" style={{ minWidth: '180px' }}>
+                        {COLUMN_DESCRIPTIONS[col]}
+                      </div>
+                    )}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -181,15 +294,14 @@ const PredictionPage: React.FC = () => {
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
                       <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-400">{fantasyPoints.toFixed(1)}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.Points ?? player.next_Points ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.REB ?? player.next_REB ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.AST ?? player.next_AST ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.STL ?? player.next_STL ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.BLK ?? player.next_BLK ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_3P%"] !== undefined ? (player as any)["next_3P%"].toFixed(1) + '%' : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.REB === 'number' ? player.Points : typeof player.next_Points === 'number' ? player.next_Points : null, ptsThresholds)}`}>{typeof (player.Points ?? player.next_Points) === 'number' ? (player.Points ?? player.next_Points).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.REB === 'number' ? player.REB : typeof player.next_REB === 'number' ? player.next_REB : null, rebThresholds)}`}>{typeof (player.REB ?? player.next_REB) === 'number' ? (player.REB ?? player.next_REB).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.AST === 'number' ? player.AST : typeof player.next_AST === 'number' ? player.next_AST : null, astThresholds)}`}>{typeof (player.AST ?? player.next_AST) === 'number' ? (player.AST ?? player.next_AST).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.STL === 'number' ? player.STL : typeof player.next_STL === 'number' ? player.next_STL : null, stlThresholds)}`}>{typeof (player.STL ?? player.next_STL) === 'number' ? (player.STL ?? player.next_STL).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.BLK === 'number' ? player.BLK : typeof player.next_BLK === 'number' ? player.next_BLK : null, blkThresholds)}`}>{typeof (player.BLK ?? player.next_BLK) === 'number' ? (player.BLK ?? player.next_BLK).toFixed(2) : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td>
                     </tr>
                   );
