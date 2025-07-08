@@ -39,9 +39,9 @@ const DEFAULT_WEIGHTS = {
 };
 
 const COLUMN_DESCRIPTIONS: Record<string, string> = {
-  PLAYER: 'The player’s full name.',
-  TEAM: 'The NBA team abbreviation.',
-  POS: 'The player’s position (e.g., G, F, C).',
+  PLAYER: 'Player name',
+  TEAM: 'The NBA team abbreviation',
+  POS: 'Player position (e.g., G, F, C).',
   TOTAL: 'Projected fantasy points based on your scoring settings.',
   MPG: 'Minutes per game',
   'FG%': 'Field goal percentage',
@@ -242,29 +242,35 @@ const PredictionPage: React.FC = () => {
             <thead className="bg-gray-100 dark:bg-gray-700 sticky top-0">
               <tr>
                 {[
-                  'PLAYER', 'TEAM', 'POS', 'TOTAL', 'MPG', 'FG%',
+                  'RANK', 'PLAYER', 'TEAM', 'POS', 'TOTAL', 'MPG', 'FG%',
                   'FT%', '3PM', 'PTS', 'REB', 'AST', 'STL', 'BLK', 'TO'
                 ].map((col) => (
                   <th key={col} className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200 relative">
                     <span className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="hover:underline focus:outline-none"
-                        onClick={() => setSortColumn(col)}
-                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
-                      >
-                        {col}
-                        {sortColumn === col && <span className="ml-1">▼</span>}
-                      </button>
-                      <button
-                        type="button"
-                        tabIndex={0}
-                        className="text-blue-500 hover:text-blue-700 focus:outline-none"
-                        onClick={e => { e.stopPropagation(); handleTooltipClick(col); }}
-                        onBlur={e => handleTooltipBlur(e, col)}
-                      >
-                        <span aria-label={`Info about ${col}`}>?</span>
-                      </button>
+                      {col === 'RANK' ? (
+                        <span>{col}</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="hover:underline focus:outline-none"
+                          onClick={() => setSortColumn(col)}
+                          style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', color: 'inherit', font: 'inherit' }}
+                        >
+                          {col}
+                          {sortColumn === col && <span className="ml-1">▼</span>}
+                        </button>
+                      )}
+                      {col !== 'RANK' && (
+                        <button
+                          type="button"
+                          tabIndex={0}
+                          className="text-blue-500 hover:text-blue-700 focus:outline-none"
+                          onClick={e => { e.stopPropagation(); handleTooltipClick(col); }}
+                          onBlur={e => handleTooltipBlur(e, col)}
+                        >
+                          <span aria-label={`Info about ${col}`}>?</span>
+                        </button>
+                      )}
                     </span>
                     {openTooltip === col && (
                       <div className="absolute left-0 mt-2 w-56 z-10 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded shadow-lg p-2 text-xs text-gray-800 dark:text-gray-100" style={{ minWidth: '180px' }}>
@@ -277,18 +283,20 @@ const PredictionPage: React.FC = () => {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={12} className="text-center py-8 text-gray-500">Loading...</td></tr>
+                <tr><td colSpan={15} className="text-center py-8 text-gray-500">Loading...</td></tr>
               ) : pagedPlayers.length === 0 ? (
-                <tr><td colSpan={12} className="text-center py-8 text-gray-500">No players found.</td></tr>
+                <tr><td colSpan={15} className="text-center py-8 text-gray-500">No players found.</td></tr>
               ) : (
-                pagedPlayers.map(player => {
+                pagedPlayers.map((player, idx) => {
                   const fantasyPoints = calculatePlayerFantasyPoints(player, scoringWeights);
+                  const globalRank = (page - 1) * pageSize + idx + 1;
                   return (
                     <tr
                       key={player.PERSON_ID}
                       className="hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer"
                       onClick={() => handlePlayerClick(player)}
                     >
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200 font-bold">{globalRank}</td>
                       <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{player.DISPLAY_FIRST_LAST}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
