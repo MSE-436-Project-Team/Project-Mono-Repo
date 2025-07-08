@@ -70,6 +70,8 @@ const PredictionPage: React.FC = () => {
   const [scoringWeights, setScoringWeights] = useState(DEFAULT_WEIGHTS);
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [selectedPosition, setSelectedPosition] = useState<string>('All');
+  const [selectedTeam, setSelectedTeam] = useState<string>('All');
 
   useEffect(() => {
     if (modelType && modelType !== selectedModel) {
@@ -137,8 +139,22 @@ const PredictionPage: React.FC = () => {
     return sorted;
   }, [players, sortColumn]);
 
-  const pagedPlayers = sortedPlayers.slice((page - 1) * pageSize, page * pageSize);
-  const totalPages = Math.ceil(players.length / pageSize);
+  const filteredPlayers = React.useMemo(() => {
+    let filtered = sortedPlayers;
+    
+    if (selectedPosition !== 'All') {
+      filtered = filtered.filter(player => player.POSITION === selectedPosition);
+    }
+    
+    if (selectedTeam !== 'All') {
+      filtered = filtered.filter(player => player.TEAM_ABBREVIATION === selectedTeam);
+    }
+    
+    return filtered;
+  }, [sortedPlayers, selectedPosition, selectedTeam]);
+
+  const pagedPlayers = filteredPlayers.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.ceil(filteredPlayers.length / pageSize);
 
   function getStatColor(value: number | null | undefined, thresholds: [number, string][]) {
     if (value === null || value === undefined) return 'bg-transparent';
@@ -225,18 +241,42 @@ const PredictionPage: React.FC = () => {
             isLoading={isLoading}
           />
         </div>
-        <div className="flex items-center gap-2 mb-6">
-          <label className="text-gray-700 dark:text-gray-200">Rows per page:</label>
-          <select
-            className="border rounded px-2 py-1"
-            value={pageSize}
-            onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
-          >
-            {PAGE_SIZES.map(size => (
-              <option key={size} value={size}>{size}</option>
-            ))}
-          </select>
+        
+        {/* Filter Controls */}
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex items-center gap-2">
+            <label className="text-gray-700 dark:text-gray-200">Position:</label>
+            <select
+              className="border rounded px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              value={selectedPosition}
+              onChange={e => { setSelectedPosition(e.target.value); setPage(1); }}
+            >
+              <option value="All">All Positions</option>
+              {[...new Set(players.map(player => player.POSITION))].sort().map(position => (
+                <option key={position} value={position}>{position}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <label className="text-gray-700 dark:text-gray-200">Team:</label>
+            <select
+              className="border rounded px-3 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+              value={selectedTeam}
+              onChange={e => { setSelectedTeam(e.target.value); setPage(1); }}
+            >
+              <option value="All">All Teams</option>
+              {[...new Set(players.map(player => player.TEAM_ABBREVIATION))].sort().map(team => (
+                <option key={team} value={team}>{team}</option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Showing {filteredPlayers.length} of {players.length} players
+          </div>
         </div>
+        
         <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg shadow">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-100 dark:bg-gray-700 sticky top-0">
@@ -334,6 +374,18 @@ const PredictionPage: React.FC = () => {
           >
             Next
           </button>
+        </div>
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <label className="text-gray-700 dark:text-gray-200">Rows per page:</label>
+          <select
+            className="border rounded px-2 py-1"
+            value={pageSize}
+            onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }}
+          >
+            {PAGE_SIZES.map(size => (
+              <option key={size} value={size}>{size}</option>
+            ))}
+          </select>
         </div>
         {/* Player Detail Modal (expanded) */}
         {showModal && selectedPlayer && (
