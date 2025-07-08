@@ -100,6 +100,51 @@ const PredictionPage: React.FC = () => {
   const pagedPlayers = players.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(players.length / pageSize);
 
+  function getStatColor(value, thresholds) {
+    if (value === null || value === undefined) return 'bg-transparent';
+    for (const [threshold, color] of thresholds) {
+      if (value >= threshold) return color;
+    }
+    return 'bg-red-500 text-white';
+  }
+
+  // Example usage for REB:
+  const rebThresholds: [number, string][] = [
+    [12, 'bg-green-600 text-white'],
+    [9, 'bg-green-400 text-white'],
+    [6, 'bg-yellow-200'],
+    [3, 'bg-orange-300'],
+  ];
+
+  const ptsThresholds: [number, string][] = [
+    [30, 'bg-green-600 text-white'],
+    [22, 'bg-green-400 text-white'],
+    [15, 'bg-yellow-200'],
+    [8, 'bg-orange-300'],
+  ];
+
+  const astThresholds: [number, string][] = [
+    [10, 'bg-green-600 text-white'],
+    [7, 'bg-green-400 text-white'],
+    [4, 'bg-yellow-200'],
+    [2, 'bg-orange-300'],
+  ];
+
+  const stlThresholds: [number, string][] = [
+    [2.5, 'bg-green-600 text-white'],
+    [1.5, 'bg-green-400 text-white'],
+    [1, 'bg-yellow-200'],
+    [0.5, 'bg-orange-300'],
+  ];
+
+  const blkThresholds: [number, string][] = [
+    [2.5, 'bg-green-600 text-white'],
+    [1.5, 'bg-green-400 text-white'],
+    [1, 'bg-yellow-200'],
+    [0.5, 'bg-orange-300'],
+  ];
+
+
   // Prepare chart data (oldest to newest from left to right)
   const chartData = history.length > 0 ? {
     labels: history.map((row) => row.SEASON || row.SEASON_ID).reverse(),
@@ -174,11 +219,11 @@ const PredictionPage: React.FC = () => {
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
                       <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-400">{fantasyPoints.toFixed(1)}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.Points ?? player.next_Points ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.REB ?? player.next_REB ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.AST ?? player.next_AST ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.STL ?? player.next_STL ?? '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.BLK ?? player.next_BLK ?? '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.REB === 'number' ? player.Points : typeof player.next_Points === 'number' ? player.next_Points : null, ptsThresholds)}`}>{typeof (player.Points ?? player.next_Points) === 'number' ? (player.Points ?? player.next_Points).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.REB === 'number' ? player.REB : typeof player.next_REB === 'number' ? player.next_REB : null, rebThresholds)}`}>{typeof (player.REB ?? player.next_REB) === 'number' ? (player.REB ?? player.next_REB).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.AST === 'number' ? player.AST : typeof player.next_AST === 'number' ? player.next_AST : null, astThresholds)}`}>{typeof (player.AST ?? player.next_AST) === 'number' ? (player.AST ?? player.next_AST).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.STL === 'number' ? player.STL : typeof player.next_STL === 'number' ? player.next_STL : null, stlThresholds)}`}>{typeof (player.STL ?? player.next_STL) === 'number' ? (player.STL ?? player.next_STL).toFixed(2) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.BLK === 'number' ? player.BLK : typeof player.next_BLK === 'number' ? player.next_BLK : null, blkThresholds)}`}>{typeof (player.BLK ?? player.next_BLK) === 'number' ? (player.BLK ?? player.next_BLK).toFixed(2) : '-'}</td>
                     </tr>
                   );
                 })
