@@ -149,18 +149,24 @@ const PredictionPage: React.FC = () => {
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Team</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Position</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Fantasy Points</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Minutes</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Points</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Rebounds</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Assists</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Steals</th>
                 <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Blocks</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">3 Pointers Made</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">3 Point Percentage</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Free Throw Percentage</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Field Goal Percentage</th>
+                <th className="px-4 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-200">Turnovers</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-500">Loading...</td></tr>
+                <tr><td colSpan={12} className="text-center py-8 text-gray-500">Loading...</td></tr>
               ) : pagedPlayers.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-8 text-gray-500">No players found.</td></tr>
+                <tr><td colSpan={12} className="text-center py-8 text-gray-500">No players found.</td></tr>
               ) : (
                 pagedPlayers.map(player => {
                   const fantasyPoints = calculatePlayerFantasyPoints(player, scoringWeights);
@@ -174,11 +180,17 @@ const PredictionPage: React.FC = () => {
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
                       <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-400">{fantasyPoints.toFixed(1)}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.Points ?? player.next_Points ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.REB ?? player.next_REB ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.AST ?? player.next_AST ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.STL ?? player.next_STL ?? '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.BLK ?? player.next_BLK ?? '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_3P%"] !== undefined ? (player as any)["next_3P%"].toFixed(1) + '%' : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td>
                     </tr>
                   );
                 })
