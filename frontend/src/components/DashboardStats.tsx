@@ -8,15 +8,24 @@ interface DashboardStatsProps {
 
 const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats }) => {
   const totalPlayers = players.length;
-  const averageAge = Math.round(players.reduce((sum, p) => sum + p.AGE, 0) / totalPlayers);
-  const averageExperience = Math.round(players.reduce((sum, p) => sum + p.EXPERIENCE_YEARS, 0) / totalPlayers);
+  
+  // Use prediction data for analytics
+  const playersWithPredictions = players.filter(p => p.next_Points !== undefined);
+  const averagePredictedPoints = playersWithPredictions.length > 0 
+    ? playersWithPredictions.reduce((sum, p) => sum + (p.next_Points || 0), 0) / playersWithPredictions.length 
+    : 0;
+  const averagePredictedRebounds = playersWithPredictions.length > 0 
+    ? playersWithPredictions.reduce((sum, p) => sum + (p.next_REB || 0), 0) / playersWithPredictions.length 
+    : 0;
   
   const topScorers = [...players]
-    .sort((a, b) => b.Points - a.Points)
+    .filter(p => p.next_Points !== undefined)
+    .sort((a, b) => (b.next_Points || 0) - (a.next_Points || 0))
     .slice(0, 5);
   
   const mostEfficient = [...players]
-    .sort((a, b) => (b.GAME_EFFICIENCY || 0) - (a.GAME_EFFICIENCY || 0))
+    .filter(p => p.next_GAME_EFFICIENCY !== undefined)
+    .sort((a, b) => (b.next_GAME_EFFICIENCY || 0) - (a.next_GAME_EFFICIENCY || 0))
     .slice(0, 5);
 
   const positionBreakdown = Object.entries(positionStats).map(([position, stats]) => ({
@@ -53,12 +62,12 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats 
           <p className="text-3xl font-bold text-primary-600">{totalPlayers.toLocaleString()}</p>
         </div>
         <div className="stat-card">
-          <h3 className="text-lg font-semibold text-gray-900">Average Age</h3>
-          <p className="text-3xl font-bold text-primary-600">{averageAge} years</p>
+          <h3 className="text-lg font-semibold text-gray-900">Avg Predicted Points</h3>
+          <p className="text-3xl font-bold text-primary-600">{averagePredictedPoints.toFixed(1)} PPG</p>
         </div>
         <div className="stat-card">
-          <h3 className="text-lg font-semibold text-gray-900">Average Experience</h3>
-          <p className="text-3xl font-bold text-primary-600">{averageExperience} years</p>
+          <h3 className="text-lg font-semibold text-gray-900">Avg Predicted Rebounds</h3>
+          <p className="text-3xl font-bold text-primary-600">{averagePredictedRebounds.toFixed(1)} RPG</p>
         </div>
       </div>
 
@@ -90,7 +99,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats 
 
         {/* Average Stats by Position */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Average Stats by Position</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Average Predicted Stats by Position</h3>
           <div className="space-y-4">
             {positionAverages.map((pos) => (
               <div key={pos.position} className="border-b border-gray-100 pb-3">
@@ -119,7 +128,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Top Scorers */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Scorers</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Predicted Scorers</h3>
           <div className="space-y-3">
             {topScorers.map((player, index) => (
               <div key={player.PERSON_ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -127,11 +136,11 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats 
                   <span className="text-lg font-bold text-primary-600">#{index + 1}</span>
                   <div>
                     <p className="font-medium text-gray-900">{player.DISPLAY_FIRST_LAST}</p>
-                    <p className="text-sm text-gray-600">{player.TEAM_ABBREVIATION} • {player.POSITION_CATEGORY}</p>
+                    <p className="text-sm text-gray-600">{player.TEAM_ABBREVIATION} • {player.POSITION}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-gray-900">{player.Points.toFixed(1)}</p>
+                  <p className="text-lg font-bold text-gray-900">{(player.next_Points || 0).toFixed(1)}</p>
                   <p className="text-sm text-gray-600">PPG</p>
                 </div>
               </div>
@@ -141,7 +150,7 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats 
 
         {/* Most Efficient */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Most Efficient</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Most Predicted Efficient</h3>
           <div className="space-y-3">
             {mostEfficient.map((player, index) => (
               <div key={player.PERSON_ID} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -149,11 +158,11 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ players, positionStats 
                   <span className="text-lg font-bold text-primary-600">#{index + 1}</span>
                   <div>
                     <p className="font-medium text-gray-900">{player.DISPLAY_FIRST_LAST}</p>
-                    <p className="text-sm text-gray-600">{player.TEAM_ABBREVIATION} • {player.POSITION_CATEGORY}</p>
+                    <p className="text-sm text-gray-600">{player.TEAM_ABBREVIATION} • {player.POSITION}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-gray-900">{(player.GAME_EFFICIENCY || 0).toFixed(1)}</p>
+                  <p className="text-lg font-bold text-gray-900">{(player.next_GAME_EFFICIENCY || 0).toFixed(1)}</p>
                   <p className="text-sm text-gray-600">Efficiency</p>
                 </div>
               </div>

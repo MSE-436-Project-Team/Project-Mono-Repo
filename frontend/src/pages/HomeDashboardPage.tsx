@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { MODEL_TYPES, getModelDisplayName } from '../services/nbaDataService';
 import type { ModelType } from '../types/nba';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8001';
 
 const HomeDashboardPage: React.FC = () => {
   const [topPlayers, setTopPlayers] = useState<any[]>([]);

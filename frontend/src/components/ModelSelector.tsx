@@ -21,31 +21,27 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
     'lstm',
     'transformer',
     'ensemble_simple',
-    'ensemble_weighted'
+    'ensemble_weighted',
+    'ensemble_stacking'
   ];
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold mb-4">Select Prediction Model</h2>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        {models.map((model) => (
-          <button
-            key={model}
-            onClick={() => onModelChange(model)}
-            disabled={isLoading}
-            className={`
-              p-3 rounded-lg border-2 transition-all duration-200 min-w-0 text-xs whitespace-normal break-words
-              ${selectedModel === model
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }
-              ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-            `}
-          >
-            <div className="font-medium text-xs break-words whitespace-normal">{getModelDisplayName(model)}</div>
-          </button>
-        ))}
+      <div className="mb-6">
+        <select
+          value={selectedModel}
+          onChange={(e) => onModelChange(e.target.value as ModelType)}
+          disabled={isLoading}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {models.map((model) => (
+            <option key={model} value={model}>
+              {getModelDisplayName(model)}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="bg-gray-50 rounded-lg p-4">

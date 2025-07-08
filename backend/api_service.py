@@ -96,15 +96,37 @@ def get_available_models():
         }
     return available_models
 
-@app.get("/player/{person_id}/history")
-def get_player_history(person_id: int):
-    stats_path = os.path.join(CSVS_DIR, "career_stats.csv")
-    if not os.path.exists(stats_path):
-        raise HTTPException(status_code=404, detail="Career stats file not found")
-    df = pd.read_csv(stats_path)
-    df['PLAYER_ID'] = df['PLAYER_ID'].astype(int)
-    player_history = df[df["PLAYER_ID"] == person_id]
-    return df_to_json_response(player_history)
+@app.get("/player/{player_id}/history")
+async def get_player_history(player_id: int):
+    """Get career history for a specific player"""
+    try:
+        # Load career stats data
+        career_stats_path = os.path.join(CSVS_DIR, "career_stats.csv")
+        if not os.path.exists(career_stats_path):
+            raise HTTPException(status_code=404, detail="Career stats data not found")
+        
+        df = pd.read_csv(career_stats_path)
+        
+        # Filter for the specific player
+        player_history = df[df['PERSON_ID'] == player_id].copy()
+        
+        if player_history.empty:
+            raise HTTPException(status_code=404, detail="Player not found")
+        
+        # Sort by season (most recent first)
+        player_history = player_history.sort_values('SEASON_ID', ascending=False)
+        
+        # Convert to list of dictionaries
+        history_data = player_history.to_dict('records')
+        
+        return {
+            "player_id": player_id,
+            "history": history_data
+        }
+        
+    except Exception as e:
+        print(f"Error getting player history: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.get("/stats/league")
 def get_league_stats():

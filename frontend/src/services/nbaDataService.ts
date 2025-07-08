@@ -1,7 +1,7 @@
 import type { PlayerStats, PlayerInfo, ModelPrediction, ModelType } from '../types/nba';
 
 // FastAPI service base URL
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8001';
 
 // Model types available
 export const MODEL_TYPES: ModelType[] = [
@@ -64,16 +64,18 @@ export async function getAvailableModels(): Promise<Record<string, { available: 
   }
 }
 
-// Load player history from FastAPI
-export async function loadPlayerHistory(personId: number): Promise<any[]> {
+// Load player career history
+export async function loadPlayerHistory(playerId: number): Promise<any[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/player/${personId}/history`);
+    const response = await fetch(`${API_BASE_URL}/player/${playerId}/history`);
     if (!response.ok) {
-      throw new Error(`Failed to load player history for ID ${personId}: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to load player history: ${response.status} ${response.statusText}`);
     }
-    return await response.json();
+    const data = await response.json();
+    console.log('Loaded player history:', data);
+    return data.history || [];
   } catch (error) {
-    console.error(`Error loading player history for ID ${personId}:`, error);
+    console.error('Error loading player history:', error);
     return [];
   }
 }
