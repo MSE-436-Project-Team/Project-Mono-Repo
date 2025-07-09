@@ -118,18 +118,26 @@ const PredictionPage: React.FC = () => {
     return steps.map((s, i) => [mean + s * std, colors[i]]) as [number, string][];
   }
 
-  const colorSteps = [
-    'bg-green-600 text-white',
-    'bg-green-400 text-white',
-    'bg-yellow-200',
-    'bg-orange-300'
-  ];
+const colorSteps = [
+  'bg-green-700 text-white',   // Dark green
+  'bg-green-500 text-white',   // Medium green
+  'bg-green-200 text-gray-800', // Pastel/light green
+  '',                           // Neutral / No background
+  'bg-red-200 text-gray-800',   // Pastel red
+  'bg-red-500 text-white',      // Medium red
+  'bg-red-700 text-white',      // Dark red
+];
 
   const [rebThresholds, setRebThresholds] = useState<[number, string][]>([]);
   const [ptsThresholds, setPtsThresholds] = useState<[number, string][]>([]);
   const [astThresholds, setAstThresholds] = useState<[number, string][]>([]);
   const [stlThresholds, setStlThresholds] = useState<[number, string][]>([]);
   const [blkThresholds, setBlkThresholds] = useState<[number, string][]>([]);
+  const [minThresholds, setMinThresholds] = useState<[number, string][]>([]);
+  const [fgThresholds, setFgThresholds] = useState<[number, string][]>([]);
+  const [ftThresholds, setFtThresholds] = useState<[number, string][]>([]);
+  const [tpmThresholds, setTpmThresholds] = useState<[number, string][]>([]);
+  const [toThresholds, setToThresholds] = useState<[number, string][]>([]);
 
 
   useEffect(() => {
@@ -138,8 +146,19 @@ const PredictionPage: React.FC = () => {
       const playerData = await loadPlayerData();
       const predictions = await loadModelPredictions(selectedModel);
       const combined = combinePlayerDataWithPredictions(playerData, predictions, selectedModel);
-      
-      const valid = combined.filter(p => p.REB && p.Points && p.AST && p.STL && p.BLK);
+
+      const valid = combined.filter(p =>
+        p.REB !== undefined &&
+        p.Points !== undefined &&
+        p.AST !== undefined &&
+        p.STL !== undefined &&
+        p.BLK !== undefined &&
+        p.next_Minutes !== undefined &&
+        p["FG%"] !== undefined &&
+        p["FT%"] !== undefined &&
+        p["3PM"] !== undefined &&
+        p.TO !== undefined
+      );
       const getVals = (key: keyof PlayerStats) => valid.map(p => p[key] as number);
 
       setRebThresholds(calculateStatThresholds(getVals('REB'), colorSteps));
@@ -147,6 +166,12 @@ const PredictionPage: React.FC = () => {
       setAstThresholds(calculateStatThresholds(getVals('AST'), colorSteps));
       setStlThresholds(calculateStatThresholds(getVals('STL'), colorSteps));
       setBlkThresholds(calculateStatThresholds(getVals('BLK'), colorSteps));
+      setMinThresholds(calculateStatThresholds(getVals('next_Minutes'), colorSteps));
+      setFgThresholds(calculateStatThresholds(getVals('FG%'), colorSteps));
+      setFtThresholds(calculateStatThresholds(getVals('FT%'), colorSteps));
+      setTpmThresholds(calculateStatThresholds(getVals('3PM'), colorSteps));
+      setToThresholds(calculateStatThresholds(getVals('TO'), colorSteps));
+      
 
       // Apply custom scoring and sort by fantasy points
       const sortedPlayers = sortPlayersByFantasyPoints(combined, scoringWeights);
@@ -389,16 +414,21 @@ const PredictionPage: React.FC = () => {
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
                       <td className="px-4 py-2 font-semibold text-[#b65e36] dark:text-orange-300">{fantasyPoints.toFixed(1)}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
+                      {/* <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td>
-                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.REB === 'number' ? player.Points : typeof player.next_Points === 'number' ? player.next_Points : null, ptsThresholds)}`}>{typeof (player.Points ?? player.next_Points) === 'number' ? (player.Points ?? player.next_Points).toFixed(2) : '-'}</td>
+                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td> */}
+                      <td className={`px-4 py-2 text-xs ${getStatColor(player.next_Minutes, minThresholds)}`}>{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor((player as any)["next_FG%"], fgThresholds)}`}>{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor((player as any)["next_FT%"], ftThresholds)}`}>{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(player.next_3PM, tpmThresholds)}`}>{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.Points === 'number' ? player.Points : typeof player.next_Points === 'number' ? player.next_Points : null, ptsThresholds)}`}>{typeof (player.Points ?? player.next_Points) === 'number' ? (player.Points ?? player.next_Points).toFixed(2) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.REB === 'number' ? player.REB : typeof player.next_REB === 'number' ? player.next_REB : null, rebThresholds)}`}>{typeof (player.REB ?? player.next_REB) === 'number' ? (player.REB ?? player.next_REB).toFixed(2) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.AST === 'number' ? player.AST : typeof player.next_AST === 'number' ? player.next_AST : null, astThresholds)}`}>{typeof (player.AST ?? player.next_AST) === 'number' ? (player.AST ?? player.next_AST).toFixed(2) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.STL === 'number' ? player.STL : typeof player.next_STL === 'number' ? player.next_STL : null, stlThresholds)}`}>{typeof (player.STL ?? player.next_STL) === 'number' ? (player.STL ?? player.next_STL).toFixed(2) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.BLK === 'number' ? player.BLK : typeof player.next_BLK === 'number' ? player.next_BLK : null, blkThresholds)}`}>{typeof (player.BLK ?? player.next_BLK) === 'number' ? (player.BLK ?? player.next_BLK).toFixed(2) : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td>
+                      <td className={`px-4 py-2 text-xs ${getStatColor(player.next_TO, toThresholds)}`}>{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td>
+                      {/* <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td> */}
                     </tr>
                   );
                 })
