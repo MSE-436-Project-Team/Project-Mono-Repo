@@ -17,15 +17,15 @@ const ModelSelector: React.FC<ModelSelectorProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const models: ModelType[] = [
-    'bayesian',
+    // 'bayesian',
     'ridge',
     'lightgbm',
     'xgboost',
-    'lstm',
-    'transformer',
-    'ensemble_simple',
+    // 'lstm',
+    // 'transformer',
+    // 'ensemble_simple',
     'ensemble_weighted',
-    'ensemble_stacking'
+    // 'ensemble_stacking'
   ];
 
   // Close dropdown when clicking outside

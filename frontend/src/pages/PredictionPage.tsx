@@ -93,6 +93,45 @@ const PredictionPage: React.FC = () => {
     }
   }, []);
 
+
+  function getStatColor(
+    value: number | null | undefined,
+    thresholds: [number, string][]
+  ): string {
+    if (value == null) return 'bg-transparent';
+    for (const [threshold, color] of thresholds) {
+      if (value >= threshold) return color;
+    }
+    return 'bg-red-500 text-white';
+  }
+
+  function calculateStatThresholds(
+    statValues: number[],
+    colors: string[]
+  ): [number, string][] {
+    const mean = statValues.reduce((sum, val) => sum + val, 0) / statValues.length;
+    const std = Math.sqrt(
+      statValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / statValues.length
+    );
+
+    const steps = [3, 2, 1, 0, -1, -2, -3];
+    return steps.map((s, i) => [mean + s * std, colors[i]]) as [number, string][];
+  }
+
+  const colorSteps = [
+    'bg-green-600 text-white',
+    'bg-green-400 text-white',
+    'bg-yellow-200',
+    'bg-orange-300'
+  ];
+
+  const [rebThresholds, setRebThresholds] = useState<[number, string][]>([]);
+  const [ptsThresholds, setPtsThresholds] = useState<[number, string][]>([]);
+  const [astThresholds, setAstThresholds] = useState<[number, string][]>([]);
+  const [stlThresholds, setStlThresholds] = useState<[number, string][]>([]);
+  const [blkThresholds, setBlkThresholds] = useState<[number, string][]>([]);
+
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -100,6 +139,15 @@ const PredictionPage: React.FC = () => {
       const predictions = await loadModelPredictions(selectedModel);
       const combined = combinePlayerDataWithPredictions(playerData, predictions, selectedModel);
       
+      const valid = combined.filter(p => p.REB && p.Points && p.AST && p.STL && p.BLK);
+      const getVals = (key: keyof PlayerStats) => valid.map(p => p[key] as number);
+
+      setRebThresholds(calculateStatThresholds(getVals('REB'), colorSteps));
+      setPtsThresholds(calculateStatThresholds(getVals('Points'), colorSteps));
+      setAstThresholds(calculateStatThresholds(getVals('AST'), colorSteps));
+      setStlThresholds(calculateStatThresholds(getVals('STL'), colorSteps));
+      setBlkThresholds(calculateStatThresholds(getVals('BLK'), colorSteps));
+
       // Apply custom scoring and sort by fantasy points
       const sortedPlayers = sortPlayersByFantasyPoints(combined, scoringWeights);
       setPlayers(sortedPlayers);
@@ -156,49 +204,49 @@ const PredictionPage: React.FC = () => {
   const pagedPlayers = filteredPlayers.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(filteredPlayers.length / pageSize);
 
-  function getStatColor(value: number | null | undefined, thresholds: [number, string][]) {
-    if (value === null || value === undefined) return 'bg-transparent';
-    for (const [threshold, color] of thresholds) {
-      if (value >= threshold) return color;
-    }
-    return 'bg-red-500 text-white';
-  }
+  // function getStatColor(value: number | null | undefined, thresholds: [number, string][]) {
+  //   if (value === null || value === undefined) return 'bg-transparent';
+  //   for (const [threshold, color] of thresholds) {
+  //     if (value >= threshold) return color;
+  //   }
+  //   return 'bg-red-500 text-white';
+  // }
 
-  // Example usage for REB:
-  const rebThresholds: [number, string][] = [
-    [12, 'bg-green-600 text-white'],
-    [9, 'bg-green-400 text-white'],
-    [6, 'bg-yellow-200'],
-    [3, 'bg-orange-300'],
-  ];
+  //  // Example usage for REB:
+  // const rebThresholds: [number, string][] = [
+  //   [12, 'bg-green-600 text-white'],
+  //   [9, 'bg-green-400 text-white'],
+  //   [6, 'bg-yellow-200'],
+  //   [3, 'bg-orange-300'],
+  // ];
 
-  const ptsThresholds: [number, string][] = [
-    [30, 'bg-green-600 text-white'],
-    [22, 'bg-green-400 text-white'],
-    [15, 'bg-yellow-200'],
-    [8, 'bg-orange-300'],
-  ];
+  // const ptsThresholds: [number, string][] = [
+  //   [30, 'bg-green-600 text-white'],
+  //   [22, 'bg-green-400 text-white'],
+  //   [15, 'bg-yellow-200'],
+  //   [8, 'bg-orange-300'],
+  // ];
 
-  const astThresholds: [number, string][] = [
-    [10, 'bg-green-600 text-white'],
-    [7, 'bg-green-400 text-white'],
-    [4, 'bg-yellow-200'],
-    [2, 'bg-orange-300'],
-  ];
+  // const astThresholds: [number, string][] = [
+  //   [10, 'bg-green-600 text-white'],
+  //   [7, 'bg-green-400 text-white'],
+  //   [4, 'bg-yellow-200'],
+  //   [2, 'bg-orange-300'],
+  // ];
 
-  const stlThresholds: [number, string][] = [
-    [2.5, 'bg-green-600 text-white'],
-    [1.5, 'bg-green-400 text-white'],
-    [1, 'bg-yellow-200'],
-    [0.5, 'bg-orange-300'],
-  ];
+  // const stlThresholds: [number, string][] = [
+  //   [2.5, 'bg-green-600 text-white'],
+  //   [1.5, 'bg-green-400 text-white'],
+  //   [1, 'bg-yellow-200'],
+  //   [0.5, 'bg-orange-300'],
+  // ];
 
-  const blkThresholds: [number, string][] = [
-    [2.5, 'bg-green-600 text-white'],
-    [1.5, 'bg-green-400 text-white'],
-    [1, 'bg-yellow-200'],
-    [0.5, 'bg-orange-300'],
-  ];
+  // const blkThresholds: [number, string][] = [
+  //   [2.5, 'bg-green-600 text-white'],
+  //   [1.5, 'bg-green-400 text-white'],
+  //   [1, 'bg-yellow-200'],
+  //   [0.5, 'bg-orange-300'],
+  // ];
 
 
   // Prepare chart data (oldest to newest from left to right)
