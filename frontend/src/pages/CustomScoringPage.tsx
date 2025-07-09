@@ -3,7 +3,7 @@ import ScoringWeightsForm from '../components/ScoringWeightsForm';
 import { DEFAULT_SCORING_WEIGHTS } from '../utils/fantasyScoring';
 import type { ScoringWeights } from '../types/nba';
 
-const LOCAL_STORAGE_KEY = 'customScoringWeights';
+const LOCAL_STORAGE_KEY = 'fantasyScoringWeights';
 
 const CustomScoringPage: React.FC = () => {
   const [weights, setWeights] = useState<ScoringWeights>(DEFAULT_SCORING_WEIGHTS);

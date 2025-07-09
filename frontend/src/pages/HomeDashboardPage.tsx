@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MODEL_TYPES, getModelDisplayName } from '../services/nbaDataService';
 import type { ModelType } from '../types/nba';
+import { calculateFantasyPoints} from '../utils/fantasyScoring';
+import {
+  loadPlayerData,
+  loadModelPredictions,
+  combinePlayerDataWithPredictions,
+  sortPlayersByFantasyPoints
+} from '../services/nbaDataService';
+
 
 const API_BASE_URL = 'http://localhost:8001';
 
@@ -12,14 +20,56 @@ const HomeDashboardPage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      // Top players by points (ensemble_weighted)
-      const topRes = await fetch(`${API_BASE_URL}/stats/top_players?stat=Points&model=ensemble_weighted&n=20`);
-      const top = await topRes.json();
-      setTopPlayers(top);
-      setLoading(false);
-    };
+
+        const savedWeights = localStorage.getItem('fantasyScoringWeights');
+        const weights = savedWeights ? JSON.parse(savedWeights) : null;
+
+        try {
+          const [playerData, predictions] = await Promise.all([
+            loadPlayerData(),
+            loadModelPredictions('ensemble_weighted')
+          ]);
+
+          let combined = combinePlayerDataWithPredictions(playerData, predictions, 'ensemble_weighted');
+
+          // Calculate fantasy points for each player
+          if (weights) {
+            combined = combined.map(player => {
+              const fantasyPoints = calculateFantasyPoints(player, weights);
+              return { ...player, Points: fantasyPoints };
+            }).sort((a, b) => b.Points - a.Points);
+          } else {
+            combined = combined.sort((a, b) => (b.Points ?? 0) - (a.Points ?? 0));
+          }
+
+          const top20 = combined.slice(0, 20);
+          setTopPlayers(top20);
+        } catch (error) {
+          console.error('Error loading dashboard data:', error);
+          setTopPlayers([]);
+        }
+
+        setLoading(false);
+          };
+
     fetchData();
-  }, []);
+  }
+  , []);
+
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setLoading(true);
+
+  //     // Top players by points (ensemble_weighted)
+  //     const topRes = await fetch(`${API_BASE_URL}/stats/top_players?stat=Points&model=ensemble_weighted&n=20`);
+  //     const top = await topRes.json();
+
+  //     setTopPlayers(top);
+  //     setLoading(false);
+  //   };
+  //   fetchData();
+  // }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -82,7 +132,8 @@ const HomeDashboardPage: React.FC = () => {
                         <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                           {player.Points?.toFixed(1) ?? player.Points ?? '-'}
                         </div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">PPG</div>
+                        {/* <div className="text-sm text-gray-500 dark:text-gray-400">PPG</div> */}
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Fantasy Pts</div>
                       </div>
                     </div>
                   ))}
