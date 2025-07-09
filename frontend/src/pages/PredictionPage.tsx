@@ -276,7 +276,7 @@ const PredictionPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-blue-900 dark:text-blue-200 mb-6 text-center">
+        <h1 className="text-2xl font-bold text-[#69392e] dark:text-blue-200 mb-6 text-center">
           Player Projections
         </h1>
         <div className="mb-6">
@@ -388,7 +388,7 @@ const PredictionPage: React.FC = () => {
                       <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{player.DISPLAY_FIRST_LAST}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
-                      <td className="px-4 py-2 font-semibold text-blue-600 dark:text-blue-400">{fantasyPoints.toFixed(1)}</td>
+                      <td className="px-4 py-2 font-semibold text-[#b65e36] dark:text-orange-300">{fantasyPoints.toFixed(1)}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>

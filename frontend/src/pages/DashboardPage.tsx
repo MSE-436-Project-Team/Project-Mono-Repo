@@ -100,8 +100,15 @@ const DashboardPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto p-4">
+   <div className="min-h-screen bg-gradient-to-br from-[#fef8f3] via-[#fff2eb] to-[#fbd1bb]">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        
+        {/* Themed header */}
+        <div className="bg-gradient-to-r from-[#f6d8af] to-[#fbd1bb] px-8 py-6 rounded-xl shadow mb-8">
+          <h2 className="text-2xl font-bold text-[#7a4f2f]">📊 Player Projection Dashboard</h2>
+          <p className="text-[#b77e6a] mt-2">Filter, sort, and compare players for your fantasy draft</p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <aside className="lg:col-span-1 space-y-6 sticky top-4 self-start">
@@ -124,6 +131,7 @@ const DashboardPage: React.FC = () => {
               onWeightsChange={handleScoringWeightsChange}
             />
           </aside>
+
           {/* Main Content */}
           <main className="lg:col-span-3">
             <PlayerProjectionsTable

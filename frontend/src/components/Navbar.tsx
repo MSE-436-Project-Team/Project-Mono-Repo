@@ -30,11 +30,11 @@ const Navbar: React.FC = () => {
     <nav className="bg-white dark:bg-gray-900 shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link to="/" className="text-xl font-bold text-blue-700 dark:text-blue-300">NBA Fantasy Dashboard</Link>
-          <Link to="/" className={`font-medium hover:text-blue-600 dark:hover:text-blue-300 ${location.pathname === '/' ? 'underline' : ''}`}>Home</Link>
+          <Link to="/" className="text-xl font-bold text-[#af6e4c] dark:text-[#f7bfa9]">NBA Fantasy Dashboard</Link>
+          <Link to="/" className={`font-medium hover:text-[#f7a88d] dark:hover:text-blue-300 ${location.pathname === '/' ? 'underline' : ''}`}>Home</Link>
           <div className="relative" ref={dropdownRef}>
             <button 
-              className="font-medium hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1"
+              className="font-medium hover:text-[#f7a88d] dark:hover:text-blue-300 flex items-center gap-1"
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               Predictions 
@@ -57,14 +57,14 @@ const Navbar: React.FC = () => {
               </div>
             )}
           </div>
-          <Link to="/scoring" className={`font-medium hover:text-blue-600 dark:hover:text-blue-300 ${location.pathname === '/scoring' ? 'underline' : ''}`}>Custom Scoring</Link>
+          <Link to="/scoring" className={`font-medium hover:text-[#f7a88d] dark:hover:text-blue-300 ${location.pathname === '/scoring' ? 'underline' : ''}`}>Custom Scoring</Link>
         </div>
-        <button
+        {/* <button
           className="ml-4 px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
           onClick={toggleDarkMode}
         >
           {isDarkMode ? '☀️ Light' : '🌙 Dark'}
-        </button>
+        </button> */}
       </div>
     </nav>
   );

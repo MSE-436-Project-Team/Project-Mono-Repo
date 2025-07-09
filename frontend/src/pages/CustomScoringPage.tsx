@@ -29,7 +29,7 @@ const CustomScoringPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-[#fffaf7] via-[#fff1e6] to-[#fde8dc] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -55,8 +55,8 @@ const CustomScoringPage: React.FC = () => {
                     Reset to Default
                   </button>
                   <button
-                    onClick={handleSave}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                    onClick={handleSave} 
+                    className="px-6 py-2 bg-gradient-to-r from-[#f6c298] to-[#f7bfa9] text-[#8b4c3d] text-white rounded-lg font-semibold hover:to-[#f4a99a] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                   >
                     Save Changes
                   </button>
