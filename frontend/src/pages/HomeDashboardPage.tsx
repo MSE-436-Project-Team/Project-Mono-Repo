@@ -7,101 +7,114 @@ const API_BASE_URL = 'http://localhost:8001';
 
 const HomeDashboardPage: React.FC = () => {
   const [topPlayers, setTopPlayers] = useState<any[]>([]);
-  const [modelAverages, setModelAverages] = useState<Record<ModelType, number>>({} as any);
-  const [leagueStats, setLeagueStats] = useState<any>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       // Top players by points (ensemble_weighted)
-      const topRes = await fetch(`${API_BASE_URL}/stats/top_players?stat=Points&model=ensemble_weighted&n=5`);
+      const topRes = await fetch(`${API_BASE_URL}/stats/top_players?stat=Points&model=ensemble_weighted&n=20`);
       const top = await topRes.json();
       setTopPlayers(top);
-      // Model comparison (avg points)
-      const modelRes = await fetch(`${API_BASE_URL}/stats/model_comparison?stat=Points`);
-      const modelAvgs = await modelRes.json();
-      setModelAverages(modelAvgs);
-      // League-wide stats
-      const leagueRes = await fetch(`${API_BASE_URL}/stats/league`);
-      const league = await leagueRes.json();
-      setLeagueStats(league);
       setLoading(false);
     };
     fetchData();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-blue-900 dark:text-blue-200 mb-4 text-center">NBA Fantasy Dashboard</h1>
-        <p className="text-lg text-gray-700 dark:text-gray-300 mb-8 text-center">Explore league-wide insights, top players, and compare model predictions for the 2025-26 season.</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10"></div>
+        <div className="relative max-w-7xl mx-auto px-6 py-16">
+          <div className="text-center">
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6">
+              NBA Fantasy Dashboard
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+              Discover the future of fantasy basketball with AI-powered player projections for the 2025-26 season
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link
+                to="/predictions/ensemble_weighted"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                View All Predictions
+              </Link>
+              <Link
+                to="/scoring"
+                className="px-8 py-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-full font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border border-gray-200 dark:border-gray-600"
+              >
+                Custom Scoring
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 pb-16">
         {loading ? (
-          <div className="text-center text-gray-500 dark:text-gray-400">Loading metrics...</div>
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-4 text-gray-600 dark:text-gray-400 text-lg">Loading dashboard...</span>
+          </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 text-blue-800 dark:text-blue-100">Top Projected Players</h2>
-              <ol className="space-y-2">
-                {topPlayers.map((player, idx) => (
-                  <li key={player.PERSON_ID} className="flex items-center gap-3">
-                    <span className="font-bold text-blue-600 dark:text-blue-300">#{idx + 1}</span>
-                    <span className="font-medium text-gray-900 dark:text-gray-100">{player.DISPLAY_FIRST_LAST}</span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">{player.TEAM_ABBREVIATION}</span>
-                    <span className="ml-auto text-blue-700 dark:text-blue-200 font-semibold">{player.Points?.toFixed(1) ?? player.Points ?? '-'}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 text-blue-800 dark:text-blue-100">Model Comparison (Avg. Points)</h2>
-              <div className="flex flex-col gap-2">
-                {MODEL_TYPES.map(model => (
-                  <div key={model} className="flex items-center gap-3">
-                    <span className="w-40 text-gray-800 dark:text-gray-200">{getModelDisplayName(model)}</span>
-                    <div className="flex-1 bg-blue-100 dark:bg-blue-900 rounded h-4 relative">
-                      <div
-                        className="bg-blue-500 dark:bg-blue-400 h-4 rounded"
-                        style={{ width: `${Math.max(0, Math.min(100, (modelAverages[model] || 0) * 2))}%` }}
-                      ></div>
+          <div className="space-y-8">
+            {/* Top Players Section */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
+                <h2 className="text-2xl font-bold text-white">🏆 Top Projected Players</h2>
+                <p className="text-blue-100 mt-2">Leading scorers for the 2025-26 season</p>
+              </div>
+              <div className="p-8">
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                  {topPlayers.map((player, idx) => (
+                    <div key={player.PERSON_ID} className="flex items-center p-4 rounded-xl bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-700 dark:to-gray-600 hover:from-blue-50 hover:to-purple-50 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-200">
+                      <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white font-bold text-lg mr-4">
+                        {idx + 1}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-900 dark:text-white text-lg">{player.DISPLAY_FIRST_LAST}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{player.TEAM_ABBREVIATION}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {player.Points?.toFixed(1) ?? player.Points ?? '-'}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">PPG</div>
+                      </div>
                     </div>
-                    <span className="ml-2 text-gray-700 dark:text-gray-100 font-semibold">{modelAverages[model]?.toFixed(1) ?? '-'}</span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 md:col-span-2">
-              <h2 className="text-xl font-semibold mb-4 text-blue-800 dark:text-blue-100">League-Wide Stats</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(leagueStats).map(([stat, val]: any) => (
-                  <div key={stat} className="bg-blue-50 dark:bg-blue-900 rounded p-3 text-center">
-                    <div className="text-xs text-gray-500 dark:text-gray-400 uppercase">{stat}</div>
-                    <div className="text-lg font-bold text-blue-800 dark:text-blue-100">{val.average?.toFixed(1) ?? '-'}</div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">avg</div>
-                    <div className="text-sm text-blue-700 dark:text-blue-200">{val.total?.toFixed(0) ?? '-'}</div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500">total</div>
-                  </div>
-                ))}
+
+            {/* Model Selection Section */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6">
+                <h2 className="text-2xl font-bold text-white">🤖 AI Models</h2>
+                <p className="text-purple-100 mt-2">Choose your preferred prediction model</p>
               </div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 md:col-span-2">
-              <h2 className="text-xl font-semibold mb-4 text-blue-800 dark:text-blue-100">Quick Links</h2>
-              <div className="flex flex-wrap gap-4 justify-center">
-                {MODEL_TYPES.map(model => (
-                  <Link
-                    key={model}
-                    to={`/predictions/${model}`}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition"
-                  >
-                    {getModelDisplayName(model)} Predictions
-                  </Link>
-                ))}
-                <Link
-                  to="/scoring"
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-                >
-                  Custom Scoring
-                </Link>
+              <div className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 justify-center max-w-4xl mx-auto">
+                  {MODEL_TYPES.map(model => (
+                    <Link
+                      key={model}
+                      to={`/predictions/${model}`}
+                      className="group p-6 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-700 dark:to-gray-600 hover:from-purple-100 hover:to-pink-100 dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-200 border border-purple-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-gray-500"
+                    >
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-purple-700 dark:group-hover:text-purple-300 transition-colors">
+                          {getModelDisplayName(model)}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                          View Predictions →
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
