@@ -23,6 +23,9 @@ const Navbar: React.FC = () => {
     };
   }, []);
 
+  //Filtered models nav bar
+  const filteredModels = MODEL_TYPES.filter(model => !['bayesian', 'lstm', 'transformer', 'ensemble_simple', 'ensemble_stacking'].includes(model));
+
   return (
     <nav className="bg-white dark:bg-gray-900 shadow sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -41,7 +44,7 @@ const Navbar: React.FC = () => {
             </button>
             {isDropdownOpen && (
               <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                {MODEL_TYPES.map(model => (
+                {filteredModels.map(model => (
                   <Link
                     key={model}
                     to={`/predictions/${model}`}
