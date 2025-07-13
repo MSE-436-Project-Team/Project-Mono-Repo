@@ -56,21 +56,6 @@ const HomeDashboardPage: React.FC = () => {
   }
   , []);
 
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setLoading(true);
-
-  //     // Top players by points (ensemble_weighted)
-  //     const topRes = await fetch(`${API_BASE_URL}/stats/top_players?stat=Points&model=ensemble_weighted&n=20`);
-  //     const top = await topRes.json();
-
-  //     setTopPlayers(top);
-  //     setLoading(false);
-  //   };
-  //   fetchData();
-  // }, []);
-
   const filteredModels = MODEL_TYPES.filter(model => !['bayesian', 'lstm', 'transformer', 'ensemble_simple', 'ensemble_stacking'].includes(model));
 
   return (

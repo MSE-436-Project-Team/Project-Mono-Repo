@@ -119,13 +119,13 @@ const PredictionPage: React.FC = () => {
   }
 
 const colorSteps = [
-  'bg-green-700 text-white',   // Dark green
-  'bg-green-500 text-white',   // Medium green
-  'bg-green-200 text-gray-800', // Pastel/light green
-  '',                           // Neutral / No background
-  'bg-red-200 text-gray-800',   // Pastel red
-  'bg-red-500 text-white',      // Medium red
-  'bg-red-700 text-white',      // Dark red
+  'bg-green-700 text-white',   
+  'bg-green-500 text-white',   
+  'bg-green-200 text-gray-800', 
+  '',                           
+  'bg-red-200 text-gray-800',
+  'bg-red-500 text-white', 
+  'bg-red-700 text-white', 
 ];
 
   const [rebThresholds, setRebThresholds] = useState<[number, string][]>([]);
@@ -228,51 +228,6 @@ const colorSteps = [
 
   const pagedPlayers = filteredPlayers.slice((page - 1) * pageSize, page * pageSize);
   const totalPages = Math.ceil(filteredPlayers.length / pageSize);
-
-  // function getStatColor(value: number | null | undefined, thresholds: [number, string][]) {
-  //   if (value === null || value === undefined) return 'bg-transparent';
-  //   for (const [threshold, color] of thresholds) {
-  //     if (value >= threshold) return color;
-  //   }
-  //   return 'bg-red-500 text-white';
-  // }
-
-  //  // Example usage for REB:
-  // const rebThresholds: [number, string][] = [
-  //   [12, 'bg-green-600 text-white'],
-  //   [9, 'bg-green-400 text-white'],
-  //   [6, 'bg-yellow-200'],
-  //   [3, 'bg-orange-300'],
-  // ];
-
-  // const ptsThresholds: [number, string][] = [
-  //   [30, 'bg-green-600 text-white'],
-  //   [22, 'bg-green-400 text-white'],
-  //   [15, 'bg-yellow-200'],
-  //   [8, 'bg-orange-300'],
-  // ];
-
-  // const astThresholds: [number, string][] = [
-  //   [10, 'bg-green-600 text-white'],
-  //   [7, 'bg-green-400 text-white'],
-  //   [4, 'bg-yellow-200'],
-  //   [2, 'bg-orange-300'],
-  // ];
-
-  // const stlThresholds: [number, string][] = [
-  //   [2.5, 'bg-green-600 text-white'],
-  //   [1.5, 'bg-green-400 text-white'],
-  //   [1, 'bg-yellow-200'],
-  //   [0.5, 'bg-orange-300'],
-  // ];
-
-  // const blkThresholds: [number, string][] = [
-  //   [2.5, 'bg-green-600 text-white'],
-  //   [1.5, 'bg-green-400 text-white'],
-  //   [1, 'bg-yellow-200'],
-  //   [0.5, 'bg-orange-300'],
-  // ];
-
 
   // Prepare chart data (oldest to newest from left to right)
   const chartData = history.length > 0 ? {
@@ -414,10 +369,6 @@ const colorSteps = [
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.TEAM_ABBREVIATION}</td>
                       <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.POSITION}</td>
                       <td className="px-4 py-2 font-semibold text-[#b65e36] dark:text-orange-300">{fantasyPoints.toFixed(1)}</td>
-                      {/* <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
-                      <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_3PM !== undefined ? player.next_3PM.toFixed(1) : '-'}</td> */}
                       <td className={`px-4 py-2 text-xs ${getStatColor(player.next_Minutes, minThresholds)}`}>{player.next_Minutes !== undefined ? player.next_Minutes.toFixed(1) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor((player as any)["next_FG%"], fgThresholds)}`}>{(player as any)["next_FG%"] !== undefined ? (player as any)["next_FG%"].toFixed(1) + '%' : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor((player as any)["next_FT%"], ftThresholds)}`}>{(player as any)["next_FT%"] !== undefined ? (player as any)["next_FT%"].toFixed(1) + '%' : '-'}</td>
@@ -428,7 +379,6 @@ const colorSteps = [
                       <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.STL === 'number' ? player.STL : typeof player.next_STL === 'number' ? player.next_STL : null, stlThresholds)}`}>{typeof (player.STL ?? player.next_STL) === 'number' ? (player.STL ?? player.next_STL).toFixed(2) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor(typeof player.BLK === 'number' ? player.BLK : typeof player.next_BLK === 'number' ? player.next_BLK : null, blkThresholds)}`}>{typeof (player.BLK ?? player.next_BLK) === 'number' ? (player.BLK ?? player.next_BLK).toFixed(2) : '-'}</td>
                       <td className={`px-4 py-2 text-xs ${getStatColor(player.next_TO, toThresholds)}`}>{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td>
-                      {/* <td className="px-4 py-2 text-gray-700 dark:text-gray-200">{player.next_TO !== undefined ? player.next_TO.toFixed(1) : '-'}</td> */}
                     </tr>
                   );
                 })
